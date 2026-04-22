@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<!-- saved from url=(0059)file:///E:/%E4%B8%8B%E8%BC%89/funfeng_live_dashboard_1.html -->
+<html lang="zh-TW"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>放風 × 戰力月報</title>
+<link href="./funfeng_live_dashboard_files/css2" rel="stylesheet">
+<style>
+:root {
+  --bg:#070b14; --bg2:#0d1320; --bg3:#111827;
+  --panel:#0e1a2b; --panel2:#0a1628; --edge:#1e3a5f;
+  --cyan:#00d4ff; --cyan2:#0099cc; --cyan3:#7ee8fa;
+  --gold:#f5c542; --gold2:#e8a800; --gold3:#fff0a0;
+  --orange:#ff7a2f; --purple:#a855f7;
+  --green:#22d3a0; --green2:#10b981;
+  --red:#ff3d5a; --text:#c8dff0; --text2:#7a9ab5;
+  --white:#ffffff;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background:var(--bg); color:var(--text);
+  font-family:'Noto Sans TC',sans-serif;
+  min-height:100vh; overflow-x:hidden;
+}
+body::before {
+  content:''; position:fixed; top:0; left:0; width:100%; height:100%;
+  pointer-events:none; z-index:0;
+  background-image:
+    linear-gradient(rgba(0,212,255,0.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,212,255,0.04) 1px,transparent 1px);
+  background-size:40px 40px;
+}
+body::after {
+  content:''; position:fixed; top:0; left:0; width:100%; height:100%;
+  pointer-events:none; z-index:0;
+  background:
+    radial-gradient(ellipse 60% 40% at 10% 0%,rgba(0,100,200,0.18) 0%,transparent 70%),
+    radial-gradient(ellipse 40% 30% at 90% 80%,rgba(0,212,255,0.10) 0%,transparent 60%),
+    radial-gradient(ellipse 30% 20% at 50% 50%,rgba(168,85,247,0.06) 0%,transparent 60%);
+}
+.scanline {
+  position:fixed; top:0; left:0; width:100%; height:100%;
+  pointer-events:none; z-index:999;
+  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.04) 3px,rgba(0,0,0,0.04) 4px);
+}
+.wrap { position:relative; z-index:1; max-width:900px; margin:0 auto; padding:20px 14px 60px; }
+
+/* LOADING */
+#loading {
+  position:fixed; inset:0; background:var(--bg);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  z-index:9998; gap:16px;
+}
+.load-logo { font-size:48px; animation:pulse 1.5s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.9)} }
+.load-text {
+  font-family:'Orbitron',sans-serif; font-size:12px;
+  color:var(--cyan); letter-spacing:4px;
+  animation:blink 1s step-end infinite;
+}
+.load-bar { width:200px; height:2px; background:var(--edge); border-radius:2px; overflow:hidden; }
+.load-fill { height:100%; background:linear-gradient(90deg,var(--cyan2),var(--cyan)); border-radius:2px; animation:loading 1.5s ease infinite; }
+@keyframes loading { 0%{width:0%} 100%{width:100%} }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+/* HEADER */
+.hdr {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 20px;
+  background:linear-gradient(135deg,rgba(0,212,255,0.08),rgba(0,0,0,0));
+  border:1px solid rgba(0,212,255,0.2);
+  border-radius:4px; margin-bottom:18px;
+  position:relative; overflow:hidden;
+}
+.hdr::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:linear-gradient(180deg,var(--cyan),var(--purple)); }
+.hdr::after { content:''; position:absolute; top:-50%; right:-10%; width:200px; height:200%; background:linear-gradient(90deg,transparent,rgba(0,212,255,0.03),transparent); transform:skewX(-20deg); animation:sweep 4s linear infinite; }
+@keyframes sweep { 0%{right:-30%} 100%{right:110%} }
+.corner-tl,.corner-tr,.corner-bl,.corner-br { position:absolute; width:10px; height:10px; }
+.corner-tl{top:-1px;left:-1px;border-top:2px solid var(--cyan);border-left:2px solid var(--cyan)}
+.corner-tr{top:-1px;right:-1px;border-top:2px solid var(--cyan);border-right:2px solid var(--cyan)}
+.corner-bl{bottom:-1px;left:-1px;border-bottom:2px solid var(--cyan);border-left:2px solid var(--cyan)}
+.corner-br{bottom:-1px;right:-1px;border-bottom:2px solid var(--cyan);border-right:2px solid var(--cyan)}
+.hdr-left { display:flex; align-items:center; gap:14px; }
+.hdr-logo {
+  width:48px; height:48px; background:linear-gradient(135deg,var(--panel2),var(--edge));
+  border:1.5px solid var(--cyan); border-radius:6px;
+  display:flex; align-items:center; justify-content:center; font-size:22px;
+  box-shadow:0 0 12px rgba(0,212,255,0.3),inset 0 0 8px rgba(0,212,255,0.05);
+}
+.hdr-title { font-family:'Orbitron',sans-serif; font-size:16px; font-weight:900; color:var(--white); letter-spacing:2px; text-shadow:0 0 20px rgba(0,212,255,0.6); line-height:1.3; }
+.hdr-sub { font-family:'Rajdhani',sans-serif; font-size:11px; color:var(--cyan); letter-spacing:3px; margin-top:2px; }
+.hdr-right { text-align:right; }
+.hdr-date { font-family:'Rajdhani',sans-serif; font-size:13px; color:var(--text2); letter-spacing:2px; }
+.hdr-season { display:inline-block; background:linear-gradient(90deg,rgba(0,212,255,0.15),rgba(168,85,247,0.15)); border:1px solid rgba(0,212,255,0.3); border-radius:2px; padding:3px 12px; font-size:11px; color:var(--cyan); letter-spacing:1px; margin-top:4px; font-family:'Rajdhani',sans-serif; }
+
+/* STATS */
+.stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:18px; }
+.stat-box {
+  background:var(--panel); border:1px solid var(--edge); border-radius:4px;
+  padding:14px 12px; text-align:center; position:relative; overflow:hidden;
+  transition:border-color 0.3s,box-shadow 0.3s;
+}
+.stat-box:hover { border-color:var(--cyan); box-shadow:0 0 15px rgba(0,212,255,0.15); }
+.stat-box::before { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent,var(--cyan),transparent); opacity:0.6; }
+.stat-box:nth-child(2)::before{background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.stat-box:nth-child(3)::before{background:linear-gradient(90deg,transparent,var(--orange),transparent)}
+.stat-box:nth-child(4)::before{background:linear-gradient(90deg,transparent,var(--purple),transparent)}
+.stat-icon{font-size:20px;margin-bottom:6px}
+.stat-lbl{font-family:'Rajdhani',sans-serif;font-size:10px;color:var(--text2);letter-spacing:2px;text-transform:uppercase;margin-bottom:5px}
+.stat-val{font-family:'Orbitron',sans-serif;font-size:16px;font-weight:700;color:var(--white)}
+.stat-box:nth-child(1) .stat-val{color:var(--cyan);text-shadow:0 0 10px rgba(0,212,255,0.5)}
+.stat-box:nth-child(2) .stat-val{color:var(--gold);text-shadow:0 0 10px rgba(245,197,66,0.5)}
+.stat-box:nth-child(3) .stat-val{color:var(--orange);text-shadow:0 0 10px rgba(255,122,47,0.5)}
+.stat-box:nth-child(4) .stat-val{color:var(--purple);text-shadow:0 0 10px rgba(168,85,247,0.5)}
+
+/* SECTION LABEL */
+.sec-lbl{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.sec-lbl-text{font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;color:var(--cyan);letter-spacing:3px;text-transform:uppercase}
+.sec-lbl-line{flex:1;height:1px;background:linear-gradient(90deg,rgba(0,212,255,0.4),transparent)}
+.sec-lbl-dot{width:5px;height:5px;border-radius:50%;background:var(--cyan);box-shadow:0 0 6px var(--cyan)}
+
+/* MONTH FILTER */
+.month-filter {
+  display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap;
+}
+.m-btn {
+  font-family:'Rajdhani',sans-serif; font-size:11px; font-weight:700;
+  letter-spacing:2px; padding:5px 14px;
+  background:var(--panel); border:1px solid var(--edge);
+  border-radius:2px; color:var(--text2); cursor:pointer;
+  transition:all 0.2s;
+}
+.m-btn:hover { border-color:var(--cyan); color:var(--cyan); }
+.m-btn.active { background:rgba(0,212,255,0.1); border-color:var(--cyan); color:var(--cyan); box-shadow:0 0 10px rgba(0,212,255,0.2); }
+
+/* PODIUM */
+.podium-row{display:flex;align-items:flex-end;justify-content:center;gap:10px;margin-bottom:20px}
+.pod{flex:1;max-width:210px;background:var(--panel);border:1px solid var(--edge);border-radius:6px;padding:16px 12px 18px;text-align:center;position:relative;overflow:hidden;transition:transform 0.3s,box-shadow 0.3s;cursor:default}
+.pod:hover{transform:translateY(-5px)}
+.pod.p1{border-color:rgba(245,197,66,0.5);box-shadow:0 0 25px rgba(245,197,66,0.15),inset 0 0 30px rgba(245,197,66,0.03);padding-top:22px}
+.pod.p1::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.pod.p2{border-color:rgba(0,212,255,0.3);box-shadow:0 0 15px rgba(0,212,255,0.08)}
+.pod.p2::before{content:'';position:absolute;top:0;left:0;right:0;height:1.5px;background:linear-gradient(90deg,transparent,var(--cyan),transparent)}
+.pod.p3{border-color:rgba(255,122,47,0.3);box-shadow:0 0 15px rgba(255,122,47,0.08)}
+.pod.p3::before{content:'';position:absolute;top:0;left:0;right:0;height:1.5px;background:linear-gradient(90deg,transparent,var(--orange),transparent)}
+.pod-hex{width:56px;height:56px;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:var(--white);margin:0 auto 10px}
+.p1 .pod-hex{background:linear-gradient(135deg,#b8860b,#ffd700,#b8860b)}
+.p2 .pod-hex{background:linear-gradient(135deg,#0e4f6e,#00d4ff,#0e4f6e)}
+.p3 .pod-hex{background:linear-gradient(135deg,#7a3010,#ff7a2f,#7a3010)}
+.pod-rank{font-family:'Orbitron',sans-serif;font-size:11px;letter-spacing:2px;margin-bottom:4px}
+.p1 .pod-rank{color:var(--gold)} .p2 .pod-rank{color:var(--cyan)} .p3 .pod-rank{color:var(--orange)}
+.pod-name{font-size:16px;font-weight:900;color:var(--white);margin-bottom:4px}
+.pod-lv-tag{display:inline-block;padding:2px 10px;border-radius:2px;font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:8px;font-family:'Rajdhani',sans-serif;background:rgba(255,122,47,0.15);border:1px solid var(--orange);color:var(--orange)}
+.pod-lv-tag.lv1c{background:rgba(0,212,255,0.15);border-color:var(--cyan);color:var(--cyan)}
+.pod-amount{font-family:'Orbitron',sans-serif;font-size:18px;font-weight:900;color:var(--gold);text-shadow:0 0 15px rgba(245,197,66,0.7)}
+
+/* TABLE */
+.tbl-wrap{background:var(--panel);border:1px solid var(--edge);border-radius:6px;overflow:hidden;margin-bottom:18px;position:relative}
+.tbl-wrap::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--cyan),transparent)}
+.tbl-head{display:grid;grid-template-columns:36px 90px 1fr 72px 88px 94px 108px;background:linear-gradient(90deg,rgba(0,30,60,0.9),rgba(0,15,35,0.9));padding:10px 14px;gap:6px;border-bottom:1px solid var(--edge)}
+.th{font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;color:var(--cyan);letter-spacing:2px;text-transform:uppercase;text-align:center;display:flex;align-items:center;justify-content:center;opacity:0.8}
+.th.L{justify-content:flex-start}
+.tbl-row{display:grid;grid-template-columns:36px 90px 1fr 72px 88px 94px 108px;padding:11px 14px;gap:6px;border-bottom:1px solid rgba(30,58,95,0.5);align-items:center;position:relative;transition:background 0.2s}
+.tbl-row:last-child{border-bottom:none}
+.tbl-row:hover{background:rgba(0,212,255,0.04)}
+.tbl-row.top3{background:rgba(245,197,66,0.02)}
+.tbl-row.top3:hover{background:rgba(245,197,66,0.05)}
+.tbl-row::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--cyan);opacity:0;transition:opacity 0.2s}
+.tbl-row:hover::before{opacity:1}
+.tbl-row.top3::before{background:var(--gold)}
+.td{text-align:center;font-size:12px} .td.L{text-align:left}
+.rn{font-family:'Orbitron',sans-serif;font-size:11px;color:var(--text2)}
+.rn.gold{color:var(--gold);text-shadow:0 0 8px rgba(245,197,66,0.5)}
+.hero-cell{display:flex;align-items:center;gap:8px}
+.h-hex{width:30px;height:30px;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:var(--white);flex-shrink:0}
+.h-hex.lv3c{background:linear-gradient(135deg,#7a3010,#ff7a2f)}
+.h-hex.lv2c{background:linear-gradient(135deg,#4a1080,#a855f7)}
+.h-hex.lv1c{background:linear-gradient(135deg,#0e3d5a,#00d4ff)}
+.h-hex.grey{background:linear-gradient(135deg,#1a2535,#2d3a4a)}
+.h-name{font-size:13px;font-weight:700;color:var(--white)}
+.lv-tag{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:2px;font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;border:1px solid;white-space:nowrap}
+.t3{background:rgba(255,122,47,0.1);border-color:#ff7a2f;color:#ff7a2f}
+.t2{background:rgba(168,85,247,0.1);border-color:#a855f7;color:#a855f7}
+.t1{background:rgba(0,212,255,0.1);border-color:var(--cyan);color:var(--cyan)}
+.t0{background:rgba(50,60,80,0.3);border-color:#2d3a4a;color:#4a5568}
+.att-n{font-size:11px;color:var(--cyan);font-family:'Rajdhani',sans-serif;letter-spacing:1px}
+.att-bar{background:rgba(255,255,255,0.05);border-radius:1px;height:3px;margin-top:3px}
+.att-fill{height:100%;border-radius:1px;background:linear-gradient(90deg,var(--cyan2),var(--cyan))}
+.m-pos{font-family:'Orbitron',sans-serif;font-size:10px;color:var(--green);text-shadow:0 0 6px rgba(34,211,160,0.4)}
+.m-zero{font-family:'Orbitron',sans-serif;font-size:10px;color:#2d3a4a}
+.m-neg{font-size:11px;color:var(--red);font-weight:700}
+.m-small{font-size:10px;color:#3a4a5a}
+.final-pos{font-family:'Orbitron',sans-serif;font-size:11px;color:var(--gold);text-shadow:0 0 8px rgba(245,197,66,0.5)}
+.final-zero{font-family:'Orbitron',sans-serif;font-size:11px;color:#2d3a4a}
+
+/* LEVEL GUIDE */
+.lv-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+.lv-box{background:var(--panel);border:1px solid var(--edge);border-radius:6px;padding:14px 12px;text-align:center;position:relative;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s}
+.lv-box:hover{transform:translateY(-3px)}
+.lv-box.b3{border-color:rgba(255,122,47,0.4)}
+.lv-box.b3::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--orange),transparent)}
+.lv-box.b3:hover{box-shadow:0 0 20px rgba(255,122,47,0.2)}
+.lv-box.b2{border-color:rgba(168,85,247,0.4)}
+.lv-box.b2::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--purple),transparent)}
+.lv-box.b2:hover{box-shadow:0 0 20px rgba(168,85,247,0.2)}
+.lv-box.b1{border-color:rgba(0,212,255,0.4)}
+.lv-box.b1::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),transparent)}
+.lv-box.b1:hover{box-shadow:0 0 20px rgba(0,212,255,0.2)}
+.lv-icon{font-size:22px;margin-bottom:6px}
+.lv-name{font-size:11px;font-weight:900;margin-bottom:4px;letter-spacing:1px;font-family:'Rajdhani',sans-serif}
+.b3 .lv-name{color:var(--orange)} .b2 .lv-name{color:var(--purple)} .b1 .lv-name{color:var(--cyan)}
+.lv-cond{font-size:10px;color:var(--text2);margin-bottom:8px;line-height:1.6}
+.lv-prize{font-family:'Orbitron',sans-serif;font-size:16px;font-weight:700;color:var(--gold);text-shadow:0 0 10px rgba(245,197,66,0.5)}
+
+/* RULE BOX */
+.rule-box{background:var(--panel2);border:1px solid var(--edge);border-radius:4px;padding:14px 18px;margin-bottom:20px;font-size:11px;line-height:2;color:var(--text2);position:relative;overflow:hidden}
+.rule-box::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:linear-gradient(180deg,var(--cyan),var(--purple))}
+.rule-title{font-family:'Rajdhani',sans-serif;font-size:11px;color:var(--cyan);letter-spacing:3px;margin-bottom:8px}
+
+/* ERROR BOX */
+.error-box{background:rgba(255,61,90,0.1);border:1px solid var(--red);border-radius:4px;padding:14px 18px;margin-bottom:18px;font-size:12px;color:var(--red);display:none}
+
+.footer{text-align:center;font-family:'Rajdhani',sans-serif;font-size:12px;color:var(--text2);letter-spacing:3px;padding-top:10px;border-top:1px solid var(--edge)}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.au{animation:fadeUp 0.5s ease both}
+.au.d0{animation-delay:.0s} .au.d1{animation-delay:.08s} .au.d2{animation-delay:.16s}
+.au.d3{animation-delay:.24s} .au.d4{animation-delay:.32s} .au.d5{animation-delay:.40s}
+.au.d6{animation-delay:.48s} .au.d7{animation-delay:.56s} .au.d8{animation-delay:.64s}
+
+@media(max-width:680px){
+  .tbl-head,.tbl-row{grid-template-columns:32px 1fr 80px 84px 100px}
+  .th:nth-child(4),.td:nth-child(4),.th:nth-child(5),.td:nth-child(5){display:none}
+  .stats-row{grid-template-columns:1fr 1fr}
+  .lv-grid{grid-template-columns:1fr}
+  .hdr-title{font-size:13px}
+  .podium-row{gap:6px}
+}
+</style>
+</head>
+<body>
+<div class="scanline"></div>
+
+<!-- LOADING SCREEN -->
+<div id="loading" style="display: none;">
+  <div class="load-logo">🐠</div>
+  <div class="load-text">LOADING COMBAT DATA...</div>
+  <div class="load-bar"><div class="load-fill"></div></div>
+</div>
+
+<div class="wrap" id="app" style="display: block;">
+
+  <!-- HEADER -->
+  <div class="hdr au d0">
+    <div class="corner-tl"></div><div class="corner-tr"></div>
+    <div class="corner-bl"></div><div class="corner-br"></div>
+    <div class="hdr-left">
+      <div class="hdr-logo">🐠</div>
+      <div>
+        <div class="hdr-title">FUN FENG <span style="color:var(--cyan)">//</span> HERO REPORT</div>
+        <div class="hdr-sub">WAREHOUSE GAMIFICATION SYSTEM <span id="cursor" style="animation:blink 1s step-end infinite">_</span></div>
+      </div>
+    </div>
+    <div class="hdr-right">
+      <div class="hdr-date" id="hdr-date">—</div>
+      <div class="hdr-season" id="hdr-season">— LOADING —</div>
+    </div>
+  </div>
+
+  <!-- ERROR -->
+  <div class="error-box" id="error-box" style="display: block;">⚠ 載入失敗：Failed to fetch。請確認試算表已設為「知道連結的任何人可檢視」。</div>
+
+  <!-- MONTH FILTER -->
+  <div class="sec-lbl au d1">
+    <div class="sec-lbl-dot"></div>
+    <div class="sec-lbl-text">SELECT MONTH</div>
+    <div class="sec-lbl-line"></div>
+  </div>
+  <div class="month-filter au d1" id="month-filter"></div>
+
+  <!-- STATS -->
+  <div class="stats-row au d1">
+    <div class="stat-box"><div class="stat-icon">⚔️</div><div class="stat-lbl">AGENTS</div><div class="stat-val" id="s-agents">—</div></div>
+    <div class="stat-box"><div class="stat-icon">💰</div><div class="stat-lbl">TOTAL BONUS</div><div class="stat-val" id="s-total">—</div></div>
+    <div class="stat-box"><div class="stat-icon">⚡</div><div class="stat-lbl">LV.3 ELITE</div><div class="stat-val" id="s-lv3">—</div></div>
+    <div class="stat-box"><div class="stat-icon">🛡️</div><div class="stat-lbl">AVG ATTEND</div><div class="stat-val" id="s-attend">—</div></div>
+  </div>
+
+  <!-- PODIUM -->
+  <div class="sec-lbl au d2">
+    <div class="sec-lbl-dot"></div>
+    <div class="sec-lbl-text">TOP AGENTS THIS SEASON</div>
+    <div class="sec-lbl-line"></div>
+  </div>
+  <div class="podium-row au d2" id="podium"></div>
+
+  <!-- TABLE -->
+  <div class="sec-lbl au d3">
+    <div class="sec-lbl-dot"></div>
+    <div class="sec-lbl-text">FULL ROSTER — SETTLEMENT DATA</div>
+    <div class="sec-lbl-line"></div>
+  </div>
+  <div class="tbl-wrap au d3">
+    <div class="tbl-head">
+      <div class="th">#</div>
+      <div class="th L">AGENT</div>
+      <div class="th">RANK</div>
+      <div class="th">ATTEND</div>
+      <div class="th">DEDUCT</div>
+      <div class="th">EFF. BONUS</div>
+      <div class="th">FINAL PAY ◈</div>
+    </div>
+    <div id="tbl-body"></div>
+  </div>
+
+  <!-- LEVEL GUIDE -->
+  <div class="sec-lbl au d7">
+    <div class="sec-lbl-dot"></div>
+    <div class="sec-lbl-text">CHALLENGE TIER TABLE</div>
+    <div class="sec-lbl-line"></div>
+  </div>
+  <div class="lv-grid au d7">
+    <div class="lv-box b3"><div class="lv-icon">⚡</div><div class="lv-name">LV.3 終極馭風者</div><div class="lv-cond">揀貨＋包貨<br>雙項平均 &lt; 1分45秒</div><div class="lv-prize">$3,000</div></div>
+    <div class="lv-box b2"><div class="lv-icon">🌀</div><div class="lv-name">LV.2 風陣導靈者</div><div class="lv-cond">揀貨＋包貨<br>雙項平均 &lt; 1分55秒</div><div class="lv-prize">$1,400</div></div>
+    <div class="lv-box b1"><div class="lv-icon">◆</div><div class="lv-name">LV.1 風紋解讀者</div><div class="lv-cond">揀貨＋包貨<br>雙項平均 &lt; 2分10秒</div><div class="lv-prize">$600</div></div>
+  </div>
+
+  <!-- RULE -->
+  <div class="rule-box au d8">
+    <div class="rule-title">// SYSTEM RULES</div>
+    出勤天數須達 15 天（含）以上，方具備結算資格。&nbsp;|&nbsp;
+    當月個人損失超過 $3,000 → 效率獎金直接歸零。&nbsp;|&nbsp;
+    最終實領 ＝ 效率獎金（A）－ 品質扣除（B）。
+  </div>
+
+  <div class="footer au d8">FUN FENG AQUATICS × WAREHOUSE SYSTEM × 2026</div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+// CONFIG — 只需改這裡
+// ═══════════════════════════════════════════════
+const SHEET_ID = '1tShjF-uBQIty3C0PGFrh1J0IW8k4SuhpIqkS1uy_jLw';
+const SHEET_NAME = 'Monthly_Summary';
+// 欄位對應（A=0, B=1, C=2...）
+const COL = {
+  month:   0,  // A 月份
+  empId:   1,  // B 員工編號
+  name:    2,  // C 姓名
+  loss:    3,  // D 當月分攤損失合計
+  deduct:  4,  // E 品質扣除金額
+  attend:  5,  // F 出勤天數
+  qualify: 6,  // G 資格達標
+  level:   7,  // H 等級
+  effBonus:8,  // I 效率獎金
+  finalPay:9,  // J 最終實領獎金
+};
+// ═══════════════════════════════════════════════
+
+let allData = [];
+let months  = [];
+let current = '';
+
+async function fetchSheet() {
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
+  const res  = await fetch(url);
+  const text = await res.text();
+  // gviz returns /*O_o*/ prefix — strip it
+  const json = JSON.parse(text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/)[1]);
+  const rows = json.table.rows;
+  const parsed = [];
+  for (const row of rows) {
+    const c = row.c;
+    if (!c || !c[COL.month] || !c[COL.month].v) continue;
+    // Skip header row if somehow included
+    const monthVal = String(c[COL.month].v || '').trim();
+    if (monthVal === '月份' || monthVal === '') continue;
+    parsed.push({
+      month:    monthVal,
+      empId:    c[COL.empId]   ? String(c[COL.empId].v   || '') : '',
+      name:     c[COL.name]    ? String(c[COL.name].v    || '') : '',
+      loss:     c[COL.loss]    ? Number(c[COL.loss].v    || 0)  : 0,
+      deduct:   c[COL.deduct]  ? Number(c[COL.deduct].v  || 0)  : 0,
+      attend:   c[COL.attend]  ? Number(c[COL.attend].v  || 0)  : 0,
+      qualify:  c[COL.qualify] ? String(c[COL.qualify].v || '') : '',
+      level:    c[COL.level]   ? String(c[COL.level].v   || '') : '',
+      effBonus: c[COL.effBonus]? Number(c[COL.effBonus].v|| 0)  : 0,
+      finalPay: c[COL.finalPay]? Number(c[COL.finalPay].v|| 0)  : 0,
+    });
+  }
+  return parsed;
+}
+
+function getMonths(data) {
+  return [...new Set(data.map(r => r.month))].sort().reverse();
+}
+
+function getLvClass(level) {
+  if (level.includes('3')) return 'lv3c';
+  if (level.includes('2')) return 'lv2c';
+  if (level.includes('1')) return 'lv1c';
+  return 'grey';
+}
+function getLvTag(level) {
+  if (level.includes('3')) return `<span class="lv-tag t3">⚡ LV.3 馭風者</span>`;
+  if (level.includes('2')) return `<span class="lv-tag t2">🌀 LV.2 導靈者</span>`;
+  if (level.includes('1')) return `<span class="lv-tag t1">◆ LV.1 解讀者</span>`;
+  return `<span class="lv-tag t0">— UNRANKED</span>`;
+}
+function fmtMoney(n) {
+  return '$' + n.toLocaleString();
+}
+function initials(name) {
+  return name ? name.charAt(0) : '?';
+}
+
+function renderMonth(month) {
+  current = month;
+  const data = allData.filter(r => r.month === month)
+    .sort((a,b) => b.finalPay - a.finalPay);
+
+  // Header
+  document.getElementById('hdr-date').textContent = month;
+  document.getElementById('hdr-season').textContent = `${month} 結算完畢`;
+
+  // Month buttons
+  document.querySelectorAll('.m-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.month === month);
+  });
+
+  // Stats
+  const totalBonus = data.reduce((s,r) => s + r.finalPay, 0);
+  const lv3count   = data.filter(r => r.level.includes('3')).length;
+  const avgAttend  = data.length ? Math.round(data.reduce((s,r) => s + r.attend, 0) / data.length) : 0;
+  document.getElementById('s-agents').textContent  = data.length;
+  document.getElementById('s-total').textContent   = fmtMoney(totalBonus);
+  document.getElementById('s-lv3').textContent     = `×${lv3count}`;
+  document.getElementById('s-attend').textContent  = `${avgAttend}D`;
+
+  // Podium — top 3 by finalPay
+  const top3 = data.slice(0,3);
+  const podClasses = ['p2','p1','p3'];
+  const podRanks   = ['RANK #02','★ RANK #01 ★','RANK #03'];
+  // Reorder: 2nd, 1st, 3rd display
+  const podOrder = top3.length >= 2 ? [top3[1], top3[0], top3[2]].filter(Boolean) : top3;
+  const podClassMap = top3.length >= 2 ? ['p2','p1','p3'] : ['p1','p2','p3'];
+  const podRankMap  = top3.length >= 2 ? ['RANK #02','★ RANK #01 ★','RANK #03'] : ['★ RANK #01 ★','RANK #02','RANK #03'];
+
+  document.getElementById('podium').innerHTML = podOrder.map((p,i) => {
+    const isLv1 = p.level.includes('1') && !p.level.includes('3') && !p.level.includes('2');
+    const lvLabel = p.level.includes('3') ? '⚡ LV.3 馭風者'
+                  : p.level.includes('2') ? '🌀 LV.2 導靈者'
+                  : p.level.includes('1') ? '◆ LV.1 解讀者'
+                  : '— UNRANKED';
+    const tagCls = isLv1 ? 'pod-lv-tag lv1c' : 'pod-lv-tag';
+    return `<div class="pod ${podClassMap[i]}">
+      <div class="pod-rank">${podRankMap[i]}</div>
+      <div class="pod-hex">${initials(p.name)}</div>
+      <div class="pod-name">${p.name}</div>
+      <div class="${tagCls}">${lvLabel}</div>
+      <div class="pod-amount">${fmtMoney(p.finalPay)}</div>
+    </div>`;
+  }).join('');
+
+  // Table
+  document.getElementById('tbl-body').innerHTML = data.map((r,i) => {
+    const rank = i + 1;
+    const isTop3 = rank <= 3;
+    const rnCls  = isTop3 ? 'rn gold' : 'rn';
+    const hexCls = getLvClass(r.level);
+    const deductHtml = r.deduct > 0
+      ? `<span class="m-neg">−${fmtMoney(r.deduct)}</span>`
+      : `<span class="m-small">${fmtMoney(r.loss)}</span>`;
+    const bonusHtml = r.effBonus > 0
+      ? `<span class="m-pos">${fmtMoney(r.effBonus)}</span>`
+      : `<span class="m-zero">$0</span>`;
+    const finalHtml = r.finalPay > 0
+      ? `<span class="final-pos">◈ ${fmtMoney(r.finalPay)}</span>`
+      : `<span class="final-zero">— $0</span>`;
+    const attPct = Math.min(100, Math.round(r.attend / 22 * 100));
+    return `<div class="tbl-row ${isTop3?'top3':''}">
+      <div class="td"><span class="${rnCls}">${String(rank).padStart(2,'0')}</span></div>
+      <div class="td L"><div class="hero-cell"><div class="h-hex ${hexCls}">${initials(r.name)}</div><div class="h-name">${r.name}</div></div></div>
+      <div class="td">${getLvTag(r.level)}</div>
+      <div class="td"><div class="att-n">${r.attend} DAYS</div><div class="att-bar"><div class="att-fill" style="width:${attPct}%"></div></div></div>
+      <div class="td">${deductHtml}</div>
+      <div class="td">${bonusHtml}</div>
+      <div class="td">${finalHtml}</div>
+    </div>`;
+  }).join('');
+}
+
+async function init() {
+  try {
+    allData = await fetchSheet();
+    months  = getMonths(allData);
+
+    if (!months.length) throw new Error('試算表無資料，請確認工作表名稱為 Monthly_Summary');
+
+    // Build month filter buttons
+    const filterEl = document.getElementById('month-filter');
+    filterEl.innerHTML = months.map(m =>
+      `<button class="m-btn" data-month="${m}" onclick="renderMonth('${m}')">${m}</button>`
+    ).join('');
+
+    // Render latest month
+    renderMonth(months[0]);
+
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+
+  } catch(e) {
+    const eb = document.getElementById('error-box');
+    eb.style.display = 'block';
+    eb.textContent = `⚠ 載入失敗：${e.message}。請確認試算表已設為「知道連結的任何人可檢視」。`;
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    console.error(e);
+  }
+}
+
+init();
+</script>
+
+
+</body></html>

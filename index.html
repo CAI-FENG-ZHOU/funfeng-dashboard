@@ -362,49 +362,25 @@ let months  = [];
 let current = '';
 
 async function fetchSheet() {
-  // Use CSV export — no CORS issues
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&sheet=${encodeURIComponent(SHEET_NAME)}`;
-  const res  = await fetch(url, { redirect: 'follow' });
+  const API = 'https://script.google.com/macros/s/AKfycbzdmUSxnHKRE8rcZRSoIerFo-xaiumj3yZjgfJlGr7vXnAxijcR-PE1T_z3dgtJ6oU7ow/exec';
+  const res  = await fetch(API);
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const text = await res.text();
-
-  // Parse CSV (handles quoted fields)
-  function parseCSV(str) {
-    const rows = []; let cur = []; let field = ''; let inQ = false;
-    for (let i = 0; i < str.length; i++) {
-      const ch = str[i];
-      if (inQ) {
-        if (ch === '"' && str[i+1] === '"') { field += '"'; i++; }
-        else if (ch === '"') inQ = false;
-        else field += ch;
-      } else {
-        if (ch === '"') inQ = true;
-        else if (ch === ',') { cur.push(field.trim()); field = ''; }
-        else if (ch === '\n') { cur.push(field.trim()); rows.push(cur); cur = []; field = ''; }
-        else if (ch !== '\r') field += ch;
-      }
-    }
-    if (field || cur.length) { cur.push(field.trim()); rows.push(cur); }
-    return rows;
-  }
-
-  const rows = parseCSV(text);
+  const rows = await res.json();
   const parsed = [];
-  // Skip header row (row 0) and note row (row 1 if it starts with ※)
   for (let i = 1; i < rows.length; i++) {
     const r = rows[i];
-    if (!r[COL.month] || r[COL.month].startsWith('※') || r[COL.month] === '月份') continue;
-    const monthVal = r[COL.month].trim();
-    if (!monthVal) continue;
+    if (!r[COL.month]) continue;
+    const monthVal = String(r[COL.month]).trim();
+    if (!monthVal || monthVal === '月份' || monthVal.startsWith('※')) continue;
     parsed.push({
       month:    monthVal,
-      empId:    r[COL.empId]    || '',
-      name:     r[COL.name]     || '',
+      empId:    String(r[COL.empId]  || ''),
+      name:     String(r[COL.name]   || ''),
       loss:     parseFloat(r[COL.loss])     || 0,
       deduct:   parseFloat(r[COL.deduct])   || 0,
       attend:   parseFloat(r[COL.attend])   || 0,
-      qualify:  r[COL.qualify]  || '',
-      level:    r[COL.level]    || '',
+      qualify:  String(r[COL.qualify] || ''),
+      level:    String(r[COL.level]   || ''),
       effBonus: parseFloat(r[COL.effBonus]) || 0,
       finalPay: parseFloat(r[COL.finalPay]) || 0,
     });

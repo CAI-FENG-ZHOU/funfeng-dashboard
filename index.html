@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<!-- saved from url=(0059)file:///E:/%E4%B8%8B%E8%BC%89/funfeng_live_dashboard_1.html -->
-<html lang="zh-TW"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>放風 × 戰力月報</title>
-<link href="./funfeng_live_dashboard_files/css2" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Noto+Sans+TC:wght@400;700;900&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
 <style>
 :root {
   --bg:#070b14; --bg2:#0d1320; --bg3:#111827;
@@ -242,13 +242,13 @@ body::after {
 <div class="scanline"></div>
 
 <!-- LOADING SCREEN -->
-<div id="loading" style="display: none;">
+<div id="loading">
   <div class="load-logo">🐠</div>
   <div class="load-text">LOADING COMBAT DATA...</div>
   <div class="load-bar"><div class="load-fill"></div></div>
 </div>
 
-<div class="wrap" id="app" style="display: block;">
+<div class="wrap" id="app" style="display:none">
 
   <!-- HEADER -->
   <div class="hdr au d0">
@@ -268,7 +268,7 @@ body::after {
   </div>
 
   <!-- ERROR -->
-  <div class="error-box" id="error-box" style="display: block;">⚠ 載入失敗：Failed to fetch。請確認試算表已設為「知道連結的任何人可檢視」。</div>
+  <div class="error-box" id="error-box"></div>
 
   <!-- MONTH FILTER -->
   <div class="sec-lbl au d1">
@@ -362,30 +362,51 @@ let months  = [];
 let current = '';
 
 async function fetchSheet() {
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
-  const res  = await fetch(url);
+  // Use CSV export — no CORS issues
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&sheet=${encodeURIComponent(SHEET_NAME)}`;
+  const res  = await fetch(url, { redirect: 'follow' });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const text = await res.text();
-  // gviz returns /*O_o*/ prefix — strip it
-  const json = JSON.parse(text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/)[1]);
-  const rows = json.table.rows;
+
+  // Parse CSV (handles quoted fields)
+  function parseCSV(str) {
+    const rows = []; let cur = []; let field = ''; let inQ = false;
+    for (let i = 0; i < str.length; i++) {
+      const ch = str[i];
+      if (inQ) {
+        if (ch === '"' && str[i+1] === '"') { field += '"'; i++; }
+        else if (ch === '"') inQ = false;
+        else field += ch;
+      } else {
+        if (ch === '"') inQ = true;
+        else if (ch === ',') { cur.push(field.trim()); field = ''; }
+        else if (ch === '\n') { cur.push(field.trim()); rows.push(cur); cur = []; field = ''; }
+        else if (ch !== '\r') field += ch;
+      }
+    }
+    if (field || cur.length) { cur.push(field.trim()); rows.push(cur); }
+    return rows;
+  }
+
+  const rows = parseCSV(text);
   const parsed = [];
-  for (const row of rows) {
-    const c = row.c;
-    if (!c || !c[COL.month] || !c[COL.month].v) continue;
-    // Skip header row if somehow included
-    const monthVal = String(c[COL.month].v || '').trim();
-    if (monthVal === '月份' || monthVal === '') continue;
+  // Skip header row (row 0) and note row (row 1 if it starts with ※)
+  for (let i = 1; i < rows.length; i++) {
+    const r = rows[i];
+    if (!r[COL.month] || r[COL.month].startsWith('※') || r[COL.month] === '月份') continue;
+    const monthVal = r[COL.month].trim();
+    if (!monthVal) continue;
     parsed.push({
       month:    monthVal,
-      empId:    c[COL.empId]   ? String(c[COL.empId].v   || '') : '',
-      name:     c[COL.name]    ? String(c[COL.name].v    || '') : '',
-      loss:     c[COL.loss]    ? Number(c[COL.loss].v    || 0)  : 0,
-      deduct:   c[COL.deduct]  ? Number(c[COL.deduct].v  || 0)  : 0,
-      attend:   c[COL.attend]  ? Number(c[COL.attend].v  || 0)  : 0,
-      qualify:  c[COL.qualify] ? String(c[COL.qualify].v || '') : '',
-      level:    c[COL.level]   ? String(c[COL.level].v   || '') : '',
-      effBonus: c[COL.effBonus]? Number(c[COL.effBonus].v|| 0)  : 0,
-      finalPay: c[COL.finalPay]? Number(c[COL.finalPay].v|| 0)  : 0,
+      empId:    r[COL.empId]    || '',
+      name:     r[COL.name]     || '',
+      loss:     parseFloat(r[COL.loss])     || 0,
+      deduct:   parseFloat(r[COL.deduct])   || 0,
+      attend:   parseFloat(r[COL.attend])   || 0,
+      qualify:  r[COL.qualify]  || '',
+      level:    r[COL.level]    || '',
+      effBonus: parseFloat(r[COL.effBonus]) || 0,
+      finalPay: parseFloat(r[COL.finalPay]) || 0,
     });
   }
   return parsed;
@@ -521,6 +542,5 @@ async function init() {
 
 init();
 </script>
-
-
-</body></html>
+</body>
+</html>
